@@ -1,54 +1,19 @@
 from flask import Flask
 from flask import render_template, abort, redirect, url_for, request
 from flaskext.sqlalchemy import SQLAlchemy
+from models import db
+from models import User
+from models import Skill
 
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqldb://root:@127.0.0.1:3306/multivalue_widget'
 
-db = SQLAlchemy(app)
-
-user_skills = db.Table('user_skills',
-    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
-    db.Column('skill_id', db.Integer, db.ForeignKey('skills.id'), nullable=False)
-)
-
-class User(db.Model):
-    __tablename__ = 'users'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    firstname = db.Column(db.String(255), nullable=False)
-    lastname = db.Column(db.String(255), nullable=False)
-    
-    skills = db.relationship('Skill', secondary=user_skills, cascade="all, delete, delete-orphan", single_parent=True)
-    
-    def __init__(self, firstname, lastname):
-        self.firstname = firstname
-        self.lastname = lastname
-
-    def __repr__(self):
-        return '<User %r>' % self.firstname
-        
-class Skill(db.Model):
-    __tablename__ = 'skills'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False)
-    parent_id = db.Column(db.Integer, db.ForeignKey('skills.id'))
-    
-    parent = db.relationship('Skill', remote_side=[id])
-    
-    def __init__(self, name):
-        self.name = name
-
-    def __repr__(self):
-        return '<User %r>' % self.name
+db.init_app(app)
 
 """
-from multivalue_widget_python import db
-db.create_all()
+Helper function to recursively write out skills
 """
-
 def build_tree(skill_id, name):
     num_children = Skill.query.filter_by(parent=Skill.query.get(skill_id)).count()
     
@@ -74,7 +39,7 @@ def build_tree(skill_id, name):
 def index():
     user = User.query.get(1)
     
-    # left side skills
+    """ left side skills """
     root_level_skills = Skill.query.filter_by(parent=None).all()
     
     left_side_skills = '<ul>'
@@ -85,7 +50,7 @@ def index():
                             
     left_side_skills += '</ul>';
     
-    # right side skills
+    """ right side skills """
     right_side_skills = ''
     
     if (len(user.skills) < 1):
@@ -104,13 +69,10 @@ def update_user(id):
     user.firstname = request.form['firstname']
     user.lastname = request.form['lastname']
     
-    # delete all skills for this user
-    # TODO can't figure out how to do this using the ORM
-    # del user.skills[:]
+    """ TODO can't figure out how to do this using the ORM """
     db.session.execute('DELETE FROM user_skills WHERE user_id = '+str(user.id))
     db.session.flush()
     
-    # add new skills
     for skill in skills:
         user.skills.append(Skill.query.get(skill))
     
