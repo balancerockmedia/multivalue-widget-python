@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div id="container">
+	<div id="content" class="group">
+        <form action="/user/{{ user.id }}" method="post">
+            <fieldset>
+		        <legend>Name</legend>
+			    <p><label for="firstname">First Name: </label>
+				<input type="text" name="firstname" value="{{ user.firstname }}" /></p>
+
+				<p><label for="lastname">Last Name: </label>
+				<input type="text" name="lastname" value="{{ user.lastname }}" /></p>
+			</fieldset>
+			
+            <fieldset>
+    		    <legend>Skills</legend>
+		    
+    		    <div id="multiselectWidget" class="skill">
+    		        <div id="multiselectWidgetLeft">{{ left_side_skills|safe }}</div>
+		        
+			        <div id="multiselectWidgetRight">
+			            <ul>{{ right_side_skills|safe }}</ul>
+			        </div>
+			    </div>
+			</fieldset>
+		
+			<fieldset class="last">
+				<p><input type="submit" name="submit" value="Save Changes" /></p>
+			</fieldset>
+	    </form>
+	</div>
+</div>
+{% endblock %}
