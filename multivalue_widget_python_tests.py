@@ -1,36 +1,38 @@
 import os
 import unittest
-from flaskext.sqlalchemy import SQLAlchemy
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 import multivalue_widget_python as mvp
-from models import db
+import models
 from models import User
 from models import Skill
 
 class AppTestCase(unittest.TestCase):
     
     def setUp(self):
-        # self.app = mvp.app.test_client()
-        
         self.app = mvp.create_app('./settings/test.cfg')
         
-        # db.init_app(self.app)
+        models.create_tables(self.app.engine)
         
-        db.create_all()
+        Session = sessionmaker(bind=self.app.engine)
+        
+        self.db = Session()
         
     def tearDown(self):
-        mvp.db.drop_all()
+        self.db.close()
+        models.drop_tables(self.app.engine)
         
     def test_create_user(self):
-        user = mvp.User('Dan', 'Johnson')
-        mvp.db.session.add(user)
-        mvp.db.session.commit()
+        user = User('Dan', 'Johnson')
+        self.db.add(user)
+        self.db.commit()
         
         self.assertEqual(user.id, 1)
-        
+      
     def test_create_skill(self):
-        skill = mvp.Skill('Dan', 'Johnson')
-        mvp.db.session.add(skill)
-        mvp.db.session.commit()
+        skill = Skill('Skiing', None)
+        self.db.add(skill)
+        self.db.commit()
         
         self.assertEqual(skill.id, 1)
         

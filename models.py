@@ -1,22 +1,23 @@
-from flaskext.sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Table, Column, Integer, String, Text, ForeignKey
+from sqlalchemy.orm import relationship, backref
+Base = declarative_base()
 
 """ Create join table for users and skills """
-user_skills = db.Table('user_skills',
-    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
-    db.Column('skill_id', db.Integer, db.ForeignKey('skills.id'), nullable=False)
+user_skills = Table('user_skills', Base.metadata,
+    Column('user_id', Integer, ForeignKey('users.id'), nullable=False),
+    Column('skill_id', Integer, ForeignKey('skills.id'), nullable=False)
 )
 
 """ User model """
-class User(db.Model):
+class User(Base):
     __tablename__ = 'users'
     
-    id = db.Column(db.Integer, primary_key=True)
-    firstname = db.Column(db.String(255), nullable=False)
-    lastname = db.Column(db.String(255), nullable=False)
+    id = Column(Integer, primary_key=True)
+    firstname = Column(String(255), nullable=False)
+    lastname = Column(String(255), nullable=False)
     
-    skills = db.relationship('Skill', secondary=user_skills, cascade="all, delete, delete-orphan", single_parent=True)
+    skills = relationship('Skill', secondary=user_skills, cascade="all, delete, delete-orphan", single_parent=True)
     
     def __init__(self, firstname, lastname):
         self.firstname = firstname
@@ -26,17 +27,24 @@ class User(db.Model):
         return '<User %r>' % self.firstname
 
 """ Skill model """ 
-class Skill(db.Model):
+class Skill(Base):
     __tablename__ = 'skills'
     
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False)
-    parent_id = db.Column(db.Integer, db.ForeignKey('skills.id'))
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255), nullable=False)
+    parent_id = Column(Integer, ForeignKey('skills.id'))
     
-    parent = db.relationship('Skill', remote_side=[id])
+    parent = relationship('Skill', remote_side=[id])
     
-    def __init__(self, name):
+    def __init__(self, name, parent):
         self.name = name
+        self.parent = parent
 
     def __repr__(self):
         return '<User %r>' % self.name
+        
+def create_tables(engine):
+    Base.metadata.create_all(engine)
+    
+def drop_tables(engine):
+    Base.metadata.drop_all(engine, checkfirst=False)

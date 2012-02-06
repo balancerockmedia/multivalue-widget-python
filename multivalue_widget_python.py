@@ -1,27 +1,29 @@
 from flask import Flask
 from flask import render_template, abort, redirect, url_for, request
-from flaskext.sqlalchemy import SQLAlchemy
-from models import db
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+import models
 from models import User
 from models import Skill
-
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqldb://root:@127.0.0.1:3306/multivalue_widget'
 
 def create_app(config_filename):
     app = Flask(__name__)
     app.config.from_pyfile(config_filename)
     
-    db.init_app(app)
+    app.engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], echo=True)
     
     return app
-    
+
 app = create_app('./settings/local.cfg')
+Session = sessionmaker(bind=app.engine)
 
 """
 Helper function to recursively write out skills
 """
 def build_tree(skill_id, name):
-    num_children = Skill.query.filter_by(parent=Skill.query.get(skill_id)).count()
+    db = Session()
+    
+    num_children = db.query(Skill).filter_by(parent=db.query(Skill).get(skill_id)).count()
     
     retval = ''
     
@@ -30,7 +32,7 @@ def build_tree(skill_id, name):
         
         retval += '<ul>'
         
-        skills = Skill.query.filter_by(parent=Skill.query.get(skill_id))
+        skills = db.query(Skill).filter_by(parent=db.query(Skill).get(skill_id))
         
         for skill in skills:
             retval += build_tree(skill.id, skill.name);
@@ -43,10 +45,12 @@ def build_tree(skill_id, name):
 
 @app.route('/')
 def index():
-    user = User.query.get(1)
+    db = Session()
+    
+    user = db.query(User).get(1)
     
     """ left side skills """
-    root_level_skills = Skill.query.filter_by(parent=None).all()
+    root_level_skills = db.query(Skill).filter_by(parent=None).all()
     
     left_side_skills = '<ul>'
     
@@ -69,20 +73,22 @@ def index():
     
 @app.route('/user/<id>', methods=['POST'])
 def update_user(id):
+    db = Session()
+    
     skills = request.form.getlist('skill')
     
-    user = User.query.get(id)
+    user = db.query(User).get(id)
     user.firstname = request.form['firstname']
     user.lastname = request.form['lastname']
     
     """ TODO can't figure out how to do this using the ORM """
-    db.session.execute('DELETE FROM user_skills WHERE user_id = '+str(user.id))
-    db.session.flush()
+    db.execute('DELETE FROM user_skills WHERE user_id = '+str(user.id))
+    db.flush()
     
     for skill in skills:
-        user.skills.append(Skill.query.get(skill))
+        user.skills.append(db.query(Skill).get(skill))
     
-    db.session.commit()
+    db.commit()
     
     return redirect(url_for('index'))
     
