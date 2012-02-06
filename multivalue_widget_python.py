@@ -5,11 +5,17 @@ from models import db
 from models import User
 from models import Skill
 
-app = Flask(__name__)
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqldb://root:@127.0.0.1:3306/multivalue_widget'
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqldb://root:@127.0.0.1:3306/multivalue_widget'
-
-db.init_app(app)
+def create_app(config_filename):
+    app = Flask(__name__)
+    app.config.from_pyfile(config_filename)
+    
+    db.init_app(app)
+    
+    return app
+    
+app = create_app('./settings/local.cfg')
 
 """
 Helper function to recursively write out skills
@@ -81,5 +87,4 @@ def update_user(id):
     return redirect(url_for('index'))
     
 if __name__ == '__main__':
-    app.debug = True
     app.run()

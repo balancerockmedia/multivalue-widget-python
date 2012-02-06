@@ -1,18 +1,21 @@
 import os
+import unittest
 from flaskext.sqlalchemy import SQLAlchemy
 import multivalue_widget_python as mvp
-import unittest
+from models import db
+from models import User
+from models import Skill
 
 class AppTestCase(unittest.TestCase):
     
     def setUp(self):
-        mvp.app.config['TESTING'] = True
+        # self.app = mvp.app.test_client()
         
-        mvp.app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqldb://root:@127.0.0.1:3306/multivalue_widget_test'
+        self.app = mvp.create_app('./settings/test.cfg')
         
-        self.app = mvp.app.test_client()
+        # db.init_app(self.app)
         
-        mvp.db.create_all()
+        db.create_all()
         
     def tearDown(self):
         mvp.db.drop_all()
@@ -23,6 +26,13 @@ class AppTestCase(unittest.TestCase):
         mvp.db.session.commit()
         
         self.assertEqual(user.id, 1)
+        
+    def test_create_skill(self):
+        skill = mvp.Skill('Dan', 'Johnson')
+        mvp.db.session.add(skill)
+        mvp.db.session.commit()
+        
+        self.assertEqual(skill.id, 1)
         
 if __name__ == '__main__':
     unittest.main()
