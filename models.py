@@ -17,7 +17,7 @@ class User(Base):
     firstname = Column(String(255), nullable=False)
     lastname = Column(String(255), nullable=False)
     
-    skills = relationship('Skill', secondary=user_skills, cascade="all, delete, delete-orphan", single_parent=True)
+    skills = relationship('Skill', secondary=user_skills, single_parent=True)
     
     def __init__(self, firstname, lastname):
         self.firstname = firstname

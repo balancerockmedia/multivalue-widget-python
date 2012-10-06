@@ -12,6 +12,8 @@ def create_app(config_filename):
     
     app.engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], echo=True)
     
+    # models.create_tables(app.engine)
+    
     return app
 
 app = create_app('./settings/local.cfg')
@@ -81,8 +83,9 @@ def update_user(id):
     user.firstname = request.form['firstname']
     user.lastname = request.form['lastname']
     
-    """ TODO can't figure out how to do this using the ORM """
-    db.execute('DELETE FROM user_skills WHERE user_id = '+str(user.id))
+    print user.skills
+    
+    user.skills = []
     db.flush()
     
     for skill in skills:
