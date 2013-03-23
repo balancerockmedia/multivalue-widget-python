@@ -1,15 +1,15 @@
 /* Structure */
 #container { width: 810px; margin: 20px auto 0; }
 
-	#content { background: #f0f0f0; border-radius: 5px; border-top-left-radius: 0; border-top-right-radius: 0; padding: 30px; border-top: 5px solid #cccccc; }
+#content { background: #f0f0f0; border-radius: 5px; border-top-left-radius: 0; border-top-right-radius: 0; padding: 30px; border-top: 5px solid #cccccc; }
 
-	#multiselectWidgetLeft, #multiselectWidgetRight { float: left; background: #e7e7e7; margin: 0 10px 10px 0; width: 235px; border-radius: 5px; border-radius: 5px; padding-right: 10px; }
-	#multiselectWidgetRight { margin: 0; }
+#multiselectWidgetLeft, #multiselectWidgetRight { float: left; background: #e7e7e7; margin: 0 10px 10px 0; width: 235px; border-radius: 5px; border-radius: 5px; padding-right: 10px; }
+#multiselectWidgetRight { margin: 0; }
 
 /* Headers */
 h2 { font: 22px arial; margin: 0 0 20px; }
 h3 { font: 18px arial; margin: 0 0 10px; }
-	
+  
 /* Lists */
 ul { margin: 10px 0; }
 li { font: 13px/20px Arial; color: #666666; list-style: disc; margin: 0 0 0 13px; }
